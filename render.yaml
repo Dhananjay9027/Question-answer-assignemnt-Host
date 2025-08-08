@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: fastapi-quiz-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: DB_HOST
+        value: YOUR_DB_HOST
+      - key: DB_USER
+        value: YOUR_DB_USER
+      - key: DB_PASSWORD
+        value: YOUR_DB_PASSWORD
+      - key: DB_NAME
+        value: quiz_db
+      - key: EMAIL_ADDRESS
+        value: YOUR_GMAIL
+      - key: EMAIL_PASSWORD
+        value: YOUR_APP_PASSWORD
+    autoDeploy: true

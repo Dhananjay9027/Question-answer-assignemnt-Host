@@ -168,5 +168,7 @@ def submit_score(data: ScoreSubmission):
     except Exception as e:
         print(f" ERROR during score submission: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+    #$
 
 

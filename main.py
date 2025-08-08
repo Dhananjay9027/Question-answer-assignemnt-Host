@@ -122,7 +122,7 @@ from datetime import datetime
 @app.post("/submit-score")
 def submit_score(data: ScoreSubmission):
     try:
-        print(f"▶Received score submission: student_id={data.student_id}, score={data.score}")
+        print(f"▶ Received score submission: student_id={data.student_id}, score={data.score}")
 
         # Connect to database
         db = mysql.connector.connect(**db_config)
@@ -133,41 +133,44 @@ def submit_score(data: ScoreSubmission):
         result = cursor.fetchone()
 
         if not result:
-            print("Student not found.")
+            print("❌ Student not found.")
             raise HTTPException(status_code=404, detail="Student not found")
 
         name, email = result
-        print(f"Student found: {name}, {email}")
+        print(f"👤 Student found: {name}, {email}")
 
         # Update score and time_of_play
         now = datetime.now()
         update_query = "UPDATE students SET score = %s, time_of_play = %s WHERE id = %s"
         cursor.execute(update_query, (data.score, now, data.student_id))
         db.commit()
-        print(" Score and time updated in database.")
+        print("✅ Score and time updated in database.")
 
         cursor.close()
         db.close()
 
         # Try sending the certificate
         try:
-            print("Generating and sending certificate...")
+            print("🖨️ Generating certificate and sending email...")
             cert_path = generate_certificate(name)
             send_certificate_email(email, name)
-            print("Certificate sent successfully.")
-
-    # Generate certificate link to send back to Unity
-            safe_name = name.lower().replace(" ", "_")
-            cert_url = f"https://question-answer-assignemnt-host.onrender.com/certificates/{safe_name}.png"
-
+            print("✅ Certificate sent successfully.")
         except Exception as cert_err:
-            print(f"Failed to send certificate: {cert_err}")
-            cert_url = None  # Don't fail entire request, but return null URL
-        return {"status": "Score saved and certificate processed"}
+            print(f"⚠️ Failed to send certificate: {cert_err}")
+
+        # Generate certificate URL for Unity (to generate QR on client side)
+        safe_name = name.lower().replace(" ", "_")
+        cert_url = f"https://question-answer-assignemnt-host.onrender.com/certificates/{safe_name}.png"
+
+        return {
+            "status": "Score saved and certificate processed",
+            "certificate_url": cert_url  # 👈 This is what Unity will use
+        }
 
     except Exception as e:
-        print(f" ERROR during score submission: {e}")
+        print(f"❌ ERROR during score submission: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
     
     #$
 

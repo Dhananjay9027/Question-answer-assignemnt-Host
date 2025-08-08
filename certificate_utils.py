@@ -23,14 +23,11 @@ os.makedirs(CERTIFICATE_DIR, exist_ok=True)
 def generate_certificate(name: str) -> str:
     try:
         # Sanitize filename
-        safe_name = name.lower().replace(' ', '_')
-        filename = f"{name.lower().replace(' ', '_')}.png"
+        safe_name = name.lower().replace(" ", "_")
+        filename = f"{safe_name}.png"
         output_path = os.path.join(CERTIFICATE_DIR, filename)
 
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        template_path = os.path.join(base_path, "base_certificate.png")
-        template = Image.open(template_path).convert("RGBA")
-
+        template = Image.open("base_certificate.png").convert("RGBA")
         draw = ImageDraw.Draw(template)
 
         try:
@@ -50,21 +47,15 @@ def generate_certificate(name: str) -> str:
         )
         draw.text((x, y), name, fill="black", font=font)
 
-        # Generate QR code URL
-        cert_url = f"https://question-answer-assignemnt-host.onrender.com/certificates/{safe_name}.png"
-        qr = qrcode.make(cert_url)
-
-        qr_size = 250
-        qr = qr.resize((qr_size, qr_size))
-        qr_position = (template.width - qr_size - 40, template.height - qr_size - 40)
-        template.paste(qr, qr_position)
+        # ❌ No QR code added here
 
         template.save(output_path)
-        print(f" Certificate with QR saved as {output_path}")
+        print(f"✅ Certificate saved at {output_path}")
         return output_path
 
     except Exception as e:
-        raise Exception(f" Certificate generation failed: {e}")
+        raise Exception(f"❌ Certificate generation failed: {e}")
+
 
 
 def send_certificate_email(email_to: str, name: str):

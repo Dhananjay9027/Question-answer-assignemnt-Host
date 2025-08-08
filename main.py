@@ -3,9 +3,10 @@ from pydantic import BaseModel
 import mysql.connector
 from fastapi.middleware.cors import CORSMiddleware
 from typing import List
-from certificate_utils import send_certificate_email
+from certificate_utils import send_certificate_email, generate_certificate
 from dotenv import load_dotenv
 import os
+from fastapi.staticfiles import StaticFiles 
 app = FastAPI()
 load_dotenv()
 # CORS (allow Unity app to connect)
@@ -16,7 +17,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.mount("/certificates", StaticFiles(directory="certificates"), name="certificates")
 # MySQL config (change these)
 db_config = {
     "host": os.getenv("DB_HOST"),
@@ -150,12 +151,18 @@ def submit_score(data: ScoreSubmission):
 
         # Try sending the certificate
         try:
-            print(" Sending certificate...")
+            print("Generating and sending certificate...")
+            cert_path = generate_certificate(name)
             send_certificate_email(email, name)
             print("Certificate sent successfully.")
-        except Exception as cert_err:
-            print(f" Failed to send certificate: {cert_err}")
 
+    # Generate certificate link to send back to Unity
+            safe_name = name.lower().replace(" ", "_")
+            cert_url = f"https://question-answer-assignemnt-host.onrender.com/certificates/{safe_name}.png"
+
+        except Exception as cert_err:
+            print(f"Failed to send certificate: {cert_err}")
+            cert_url = None  # Don't fail entire request, but return null URL
         return {"status": "Score saved and certificate processed"}
 
     except Exception as e:

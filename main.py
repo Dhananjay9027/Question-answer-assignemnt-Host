@@ -57,7 +57,15 @@ class Question(BaseModel):
 @app.post("/login-or-register")
 def login_or_register(data: Registration):
     try:
-        db = mysql.connector.connect(**db_config)
+        print("📩 Received registration data:", data)
+
+        db = mysql.connector.connect(
+            host=os.getenv("DB_HOST"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASSWORD"),
+            database=os.getenv("DB_NAME"),
+            port=int(os.getenv("DB_PORT", 3306))
+        )
         cursor = db.cursor(dictionary=True)
 
         # Check for existing user
@@ -85,8 +93,12 @@ def login_or_register(data: Registration):
         cursor.close()
         db.close()
         return {"status": "success", "student_id": student_id, "message": message}
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        import traceback
+        print("❌ Error during login or register:", traceback.format_exc())  # <-- log full error
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 
 @app.get("/questions", response_model=List[Question])

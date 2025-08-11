@@ -107,7 +107,7 @@ def get_questions():
     try:
         db = mysql.connector.connect(**db_config)
         cursor = db.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM questions ORDER BY RAND() LIMIT 50")
+        cursor.execute("SELECT * FROM questions ORDER BY RAND() LIMIT 5")
         questions = cursor.fetchall()
         cursor.close()
         db.close()
